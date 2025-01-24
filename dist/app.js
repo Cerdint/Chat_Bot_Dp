@@ -39,7 +39,7 @@ const stop = (ctx) => {
     }
 };
 
-dotenv.config({ path: ".env.dev" });
+dotenv.config({ path: ".env" });
 const config = {
     port: Number(process.env.PORT) ?? 3008,
     time_limit_ms: Number(process.env.TIME_LIMIT_MS) ?? 60000,
