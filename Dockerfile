@@ -1,40 +1,46 @@
-# Image size ~ 400MB
+# Use the official Node.js image as the base image for building the application.
 FROM node:21-alpine3.18 as builder
 
-WORKDIR /app
-
+# Enable Corepack and prepare for PNPM installation
 RUN corepack enable && corepack prepare pnpm@latest --activate
 ENV PNPM_HOME=/usr/local/bin
 
-COPY . .
+# Set environment variables
+ENV PORT=3000
+ENV TIME_LIMIT_MS=30000
+ENV MAX_ATTEMPTS=5
 
-COPY package*.json *-lock.yaml ./
-
-RUN apk add --no-cache --virtual .gyp \
-        python3 \
-        make \
-        g++ \
-    && apk add --no-cache git \
-    && pnpm install && pnpm run build \
-    && apk del .gyp
-
-FROM node:21-alpine3.18 as deploy
-
+# Set the working directory inside the container
 WORKDIR /app
 
-ARG PORT
-ENV PORT $PORT
-EXPOSE $PORT
+# Copy package.json and pnpm-lock.yaml files to the working directory
+COPY package*.json pnpm-lock.yaml ./
 
-COPY --from=builder /app/assets ./assets
+# Install git for potential dependencies
+RUN apk add --no-cache git
+
+# Install PNPM dependencies
+RUN pnpm install
+
+# Copy the application source code into the container
+COPY . .
+
+RUN pnpm build
+
+# Create a new stage for deployment
+FROM builder as deploy
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy only necessary files and directories for deployment
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/*.json /app/*-lock.yaml ./
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
 
-RUN corepack enable && corepack prepare pnpm@latest --activate 
-ENV PNPM_HOME=/usr/local/bin
+# Instalar solo dependencias de producción
+RUN pnpm install --frozen-lockfile --production
 
-RUN npm cache clean --force && pnpm install --production --ignore-scripts \
-    && addgroup -g 1001 -S nodejs && adduser -S -u 1001 nodejs \
-    && rm -rf $PNPM_HOME/.npm $PNPM_HOME/.node-gyp
+RUN pnpm add -g pm2
 
-CMD ["npm", "start"]
+# Define the command to start the application using PM2 runtime
+CMD ["pm2-runtime", "start", "./dist/app.js", "--cron", "0 */12 * * *"]
