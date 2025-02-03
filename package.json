@@ -5,6 +5,7 @@
   "main": "dist/app.js",
   "type": "module",
   "scripts": {
+    "production": "pm2-runtime start ./dist/app.js",
     "start": "node ./dist/app.js",
     "lint": "eslint . --no-ignore",
     "dev": "npm run lint && nodemon ./src/app.ts",
@@ -14,7 +15,8 @@
   "dependencies": {
     "@builderbot/bot": "1.2.4",
     "@builderbot/provider-baileys": "1.2.4",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "pm2": "^5.4.3"
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
