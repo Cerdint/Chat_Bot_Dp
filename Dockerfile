@@ -6,7 +6,6 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 ENV PNPM_HOME=/usr/local/bin
 
 # Set environment variables
-ENV PORT=3000
 ENV TIME_LIMIT_MS=30000
 ENV MAX_ATTEMPTS=5
 
@@ -43,4 +42,4 @@ RUN pnpm install --frozen-lockfile --production
 RUN pnpm add -g pm2
 
 # Define the command to start the application using PM2 runtime
-CMD ["pm2-runtime", "start", "./dist/app.js", "--cron", "0 * * * *"]
+CMD ["pm2-runtime", "start", "./dist/app.js", "--cron", "0 */12 * * *"]
