@@ -6,6 +6,7 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 ENV PNPM_HOME=/usr/local/bin
 
 # Set environment variables
+ENV PORT=8000
 ENV TIME_LIMIT_MS=30000
 ENV MAX_ATTEMPTS=5
 
